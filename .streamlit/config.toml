@@ -2,7 +2,7 @@
 base = "dark"
 font="Noto Sans Arabic"
 codeFont="Noto Sans Arabic"
-baseFontSize=16
+baseFontSize=32
 
 [server]
 enableStaticServing = true
