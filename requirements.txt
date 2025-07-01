@@ -5,3 +5,4 @@ torch
 transformers
 soundfile
 streamlit-webrtc
+audio-recorder-streamlit
