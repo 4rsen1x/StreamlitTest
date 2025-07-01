@@ -371,27 +371,6 @@ st.subheader("📦 Installation Requirements")
 if not MIC_RECORDER_AVAILABLE and not AUDIO_RECORDER_AVAILABLE:
     st.error("No audio recording components available!")
 
-st.markdown("""
-**For best experience with YOUR model, install:**
-```bash
-pip install streamlit-mic-recorder
-```
-
-**Alternative:**
-```bash  
-pip install audio-recorder-streamlit
-```
-
-**Additional dependencies:**
-```bash
-pip install scipy  # for audio resampling
-```
-
-**🤖 All transcriptions use your custom Whisper model:**
-- Model: `hifzyml/whisper-arabic-quran-finetuned`
-- Optimized for Arabic speech
-- Runs on your hardware (GPU if available)
-""")
 
 # Show transcription history
 if st.session_state.transcription_history:
