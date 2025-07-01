@@ -1,6 +1,5 @@
 # app.py
 import streamlit as st
-from streamlit_audiorecorder import st_audiorecorder
 import tempfile
 import soundfile as sf
 from transformers import AutoProcessor, AutoModelForSpeechSeq2Seq
