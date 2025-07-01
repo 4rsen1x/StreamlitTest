@@ -6,3 +6,5 @@ transformers
 soundfile
 streamlit-webrtc
 audio-recorder-streamlit
+streamlit-mic-recorder
+scipy
