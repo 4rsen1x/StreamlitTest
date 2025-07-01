@@ -10,7 +10,22 @@ import numpy as np
 import time
 from audio_recorder_streamlit import audio_recorder
 
-
+st.markdown(
+    """
+    <style>
+    /* Use a clean Arabic-compatible font and set RTL direction */
+    html, body, [data-testid="stAppViewContainer"] {
+        font-family: 'Tahoma', 'Arial', sans-serif;
+        direction: rtl;
+    }
+    /* Ensure Markdown containers inherit RTL */
+    [data-testid="stMarkdownContainer"] {
+        direction: rtl;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 # Load model and processor from Hugging Face
 @st.cache_resource(show_spinner=False)
 def load_model():
