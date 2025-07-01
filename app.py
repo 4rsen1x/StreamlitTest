@@ -16,11 +16,6 @@ st.markdown(
     /* Use a clean Arabic-compatible font and set RTL direction */
     html, body, [data-testid="stAppViewContainer"] {
         font-family: 'Tahoma', 'Arial', sans-serif;
-        direction: rtl;
-    }
-    /* Ensure Markdown containers inherit RTL */
-    [data-testid="stMarkdownContainer"] {
-        direction: rtl;
     }
     </style>
     """,
