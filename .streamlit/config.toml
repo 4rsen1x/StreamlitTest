@@ -1,5 +1,8 @@
 [theme]
 base = "dark"
+font="Noto Sans Arabic"
+codeFont="Noto Sans Arabic"
+
 
 [server]
 enableStaticServing = true
@@ -9,7 +12,3 @@ family="Noto Sans Arabic"
 url="NotoSansArabic-Regular.ttf"
 style="normal"
 weight=400
-
-[theme]
-font="Noto Sans Arabic"
-codeFont="Noto Sans Arabic"
