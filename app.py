@@ -13,6 +13,7 @@ from audio_recorder_streamlit import audio_recorder
 st.markdown(
     """
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@100..900&display=swap'); 
     /* Use a clean Arabic-compatible font and set RTL direction */
     html, body, [data-testid="stAppViewContainer"] {
         font-family: 'Tahoma', 'Arial', sans-serif;
