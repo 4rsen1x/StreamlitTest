@@ -6,11 +6,13 @@ from transformers import AutoProcessor, AutoModelForSpeechSeq2Seq
 import torch
 import os
 from huggingface_hub import login
+
 # For live streaming
-from streamlit_webrtc import webrtc_streamer, AudioProcessorBase
-from aiortc import RTCConfiguration, RTCIceServer  # proper types
+from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, RTCConfiguration
+from aiortc import RTCIceServer  # Only import RTCIceServer from aiortc
 import av
 import numpy as np
+
 
 # Load model and processor from Hugging Face
 @st.cache_resource(show_spinner=False)
@@ -35,10 +37,6 @@ st.markdown("_Record or upload a WAV, then transcribe in seconds._")
 # Section: Live Transcription
 st.markdown("---")
 st.subheader("1. Live Transcription")
-
-from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, RTCConfiguration
-import av
-import numpy as np
 
 
 class WhisperLiveProcessor(AudioProcessorBase):
