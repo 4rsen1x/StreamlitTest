@@ -123,19 +123,43 @@ if MIC_RECORDER_AVAILABLE:
     )
 
     if audio_data is not None:
-        # Extract audio bytes and sample rate
+        # Extract audio bytes and sample rate with proper error handling
         audio_bytes = audio_data["bytes"]
         sample_rate = audio_data.get("sample_rate", 44100)
-
-        # Convert bytes to numpy array
-        audio_np = np.frombuffer(audio_bytes, dtype=np.int16)
 
         # Display audio player
         st.audio(audio_bytes, format="audio/wav")
 
+        # Convert bytes to numpy array with robust handling
+        try:
+            # Method 1: Use soundfile via temporary file (most reliable)
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
+                tmp_file.write(audio_bytes)
+                tmp_file.flush()
+
+                # Load audio data
+                audio_np, actual_sample_rate = sf.read(tmp_file.name)
+
+                # Clean up temp file
+                os.unlink(tmp_file.name)
+
+        except Exception as e:
+            # Method 2: Direct buffer conversion with size checking
+            try:
+                # Ensure buffer size is multiple of 2 (for int16)
+                if len(audio_bytes) % 2 != 0:
+                    audio_bytes = audio_bytes[:-1]  # Remove last byte if odd
+
+                audio_np = np.frombuffer(audio_bytes, dtype=np.int16)
+                actual_sample_rate = sample_rate
+
+            except Exception as e2:
+                st.error(f"Failed to process audio: {e} | {e2}")
+                st.stop()
+
         # Transcribe
         with st.spinner("Transcribing..."):
-            transcription = transcribe_audio(audio_np, processor, model, device, sample_rate)
+            transcription = transcribe_audio(audio_np, processor, model, device, actual_sample_rate)
 
         if transcription:
             # Update live transcription
@@ -248,16 +272,41 @@ if MIC_RECORDER_AVAILABLE:
         # Extract audio data
         audio_bytes = chunk_audio["bytes"]
         sample_rate = chunk_audio.get("sample_rate", 44100)
-        audio_np = np.frombuffer(audio_bytes, dtype=np.int16)
 
         # Show audio player for this chunk
         st.audio(audio_bytes, format="audio/wav")
+
+        # Convert bytes to numpy array with proper handling
+        try:
+            # Try to convert bytes to audio using soundfile via temporary file
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
+                tmp_file.write(audio_bytes)
+                tmp_file.flush()
+
+                # Load audio data
+                audio_np, actual_sample_rate = sf.read(tmp_file.name)
+
+                # Clean up temp file
+                os.unlink(tmp_file.name)
+
+        except Exception as e:
+            st.error(f"Error processing audio chunk: {e}")
+            # Fallback: try direct buffer conversion with size checking
+            try:
+                # Ensure buffer size is multiple of 2 (for int16)
+                if len(audio_bytes) % 2 != 0:
+                    audio_bytes = audio_bytes[:-1]  # Remove last byte if odd
+
+                audio_np = np.frombuffer(audio_bytes, dtype=np.int16)
+                actual_sample_rate = sample_rate
+            except Exception as e2:
+                st.error(f"Failed to process audio: {e2}")
 
         # Transcribe with your model
         with st.spinner(
             f"🤖 Processing chunk {len(st.session_state.chunk_transcriptions) + 1} with your Whisper model..."
         ):
-            chunk_transcription = transcribe_audio(audio_np, processor, model, device, sample_rate)
+            chunk_transcription = transcribe_audio(audio_np, processor, model, device, actual_sample_rate)
 
         if chunk_transcription:
             # Add to chunk transcriptions
