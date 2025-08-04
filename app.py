@@ -27,7 +27,7 @@ from audio_recorder_streamlit import audio_recorder
 def load_model():
     token = st.secrets.get("hf_token")
     login(token=token)
-    model_id = "hifzyml/whisper-arabic-quran-finetuned"
+    model_id = "hifzyml/whisper-quran-model-finetuned"
     processor = AutoProcessor.from_pretrained(model_id)
     model = AutoModelForSpeechSeq2Seq.from_pretrained(model_id)
     device = "cuda" if torch.cuda.is_available() else "cpu"
