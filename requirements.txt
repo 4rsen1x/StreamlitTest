@@ -1,8 +1,7 @@
 huggingface_hub
 streamlit
 streamlit-audiorecorder
-torch
-transformers
+faster-whisper
 soundfile
 streamlit-webrtc
 audio-recorder-streamlit
