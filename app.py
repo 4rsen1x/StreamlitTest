@@ -2,72 +2,67 @@
 import streamlit as st
 import tempfile
 import soundfile as sf
-from faster_whisper import WhisperModel
+from transformers import WhisperProcessor, WhisperForConditionalGeneration
+import torch
 import os
 from huggingface_hub import login
 import numpy as np
 import time
 from audio_recorder_streamlit import audio_recorder
+import librosa
 
-# st.markdown(
-#     """
-#     <style>
-#     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@100..900&display=swap');
-#     /* Use a clean Arabic-compatible font and set RTL direction */
-#     html, body, [data-testid="stAppViewContainer"] {
-#         font-family: 'Tahoma', 'Arial', sans-serif;
-#     }
-#     </style>
-#     """,
-#     unsafe_allow_html=True,
-# )
-# Configuration for faster-whisper
-DEVICE = "cuda"           # "cuda" if you have GPU, else "cpu"
-COMPUTE_TYPE = "float16"  # fast on GPU; if CPU, try "int8" or "int8_float16"
-LANGUAGE = "ar"           # e.g. "ar" for Arabic, "en" for English, or None to auto-detect
-TASK = "transcribe"       # or "translate"
-VAD_FILTER = True         # voice activity detection; helps skip long silences
-BEAM_SIZE = 5
+# Configuration
+LANGUAGE = "ar"  # Arabic
+TASK = "transcribe"  # or "translate"
 
-# Load model using faster-whisper
+
+# Load model using transformers
 @st.cache_resource(show_spinner=False)
 def load_model():
     token = st.secrets.get("hf_token")
     login(token=token)
     model_id = "hifzyml/whisper-quran-model-finetuned_v2"
 
-    # Load faster-whisper model
-    model = WhisperModel(
-        model_id,
-        device=DEVICE,
-        compute_type=COMPUTE_TYPE,
-    )
-    return model
+    # Load model and processor
+    processor = WhisperProcessor.from_pretrained(model_id)
+    model = WhisperForConditionalGeneration.from_pretrained(model_id)
+
+    # Use CPU (Streamlit Cloud doesn't have GPU)
+    device = "cpu"
+    model.to(device)
+
+    return model, processor, device
 
 
-def transcribe_audio(audio_path: str, model):
-    """Function to transcribe audio file using faster-whisper"""
+def transcribe_audio(audio_path: str, model, processor, device):
+    """Function to transcribe audio file using transformers"""
     try:
         t0 = time.perf_counter()
-        segments, _ = model.transcribe(
-            audio_path,
-            language=LANGUAGE,
-            task=TASK,
-            beam_size=BEAM_SIZE,
-            vad_filter=VAD_FILTER,
-            temperature=0.0,
-            word_timestamps=False,
-        )
-        final_text = " ".join(seg.text.strip() for seg in segments).strip()
+
+        # Load audio file
+        audio, sr = librosa.load(audio_path, sr=16000)
+
+        # Process audio
+        inputs = processor(audio, sampling_rate=16000, return_tensors="pt")
+        inputs = inputs.to(device)
+
+        # Generate transcription
+        with torch.no_grad():
+            forced_decoder_ids = processor.get_decoder_prompt_ids(language=LANGUAGE, task=TASK)
+            predicted_ids = model.generate(inputs.input_features, forced_decoder_ids=forced_decoder_ids)
+
+        # Decode
+        transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)[0]
+
         elapsed = time.perf_counter() - t0
-        return final_text, elapsed
+        return transcription.strip(), elapsed
     except Exception as e:
         st.error(f"Transcription error: {e}")
         return "", 0
 
 
 # Global model loading
-model = load_model()
+model, processor, device = load_model()
 
 # Page setup
 st.set_page_config(page_title="🎙️ Audio Transcriber", layout="centered")
@@ -101,7 +96,7 @@ if audio_bytes:
         # Transcribe
         try:
             with st.spinner("Transcribing..."):
-                transcription, elapsed = transcribe_audio(tmp_file.name, model)
+                transcription, elapsed = transcribe_audio(tmp_file.name, model, processor, device)
 
             if transcription:
                 st.success("**Transcription:**")
@@ -135,7 +130,7 @@ if uploaded_file is not None:
         try:
             # Transcribe
             with st.spinner("Transcribing uploaded file..."):
-                transcription, elapsed = transcribe_audio(tmp_file.name, model)
+                transcription, elapsed = transcribe_audio(tmp_file.name, model, processor, device)
 
             if transcription:
                 st.success("**Transcription:**")
