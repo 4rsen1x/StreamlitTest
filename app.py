@@ -22,8 +22,8 @@ from audio_recorder_streamlit import audio_recorder
 #     unsafe_allow_html=True,
 # )
 # Configuration for faster-whisper
-DEVICE = "cpu"           # "cuda" if you have GPU, else "cpu"
-COMPUTE_TYPE = "int8"  # fast on GPU; if CPU, try "int8" or "int8_float16"
+DEVICE = "cuda"           # "cuda" if you have GPU, else "cpu"
+COMPUTE_TYPE = "float16"  # fast on GPU; if CPU, try "int8" or "int8_float16"
 LANGUAGE = "ar"           # e.g. "ar" for Arabic, "en" for English, or None to auto-detect
 TASK = "transcribe"       # or "translate"
 VAD_FILTER = True         # voice activity detection; helps skip long silences
